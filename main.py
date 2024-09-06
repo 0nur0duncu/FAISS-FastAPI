@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Path
 from enum import Enum
 from typing import Optional, Union, List
 from pydantic import BaseModel
@@ -85,6 +85,12 @@ async def hidden_query_route(hidden_query: Union[str, None] = Query(None, includ
     else:
         return {"hidden_query": "Not found"}
     
+@app.get("/items_validation/{item_id}")
+async def read_item_validation(*,item_id: int = Path(..., title="The ID of the item to get", ge=10, le=100), q: Union[str, None] = Query(default=None, alias="item-query"), size: float = Query(default=10.2, gt=0, lt=100)):
+    results = {"item_id": item_id, "size": size}
+    if q:
+        results.update({"q": q})
+    return results
 
 # uvicorn main:app --host 127.0.0.1 --port 5000 --reload
 """
