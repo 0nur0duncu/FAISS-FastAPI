@@ -1,6 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from enum import Enum
-from typing import Optional, Union
+from typing import Optional, Union, List
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -19,9 +19,6 @@ async def put():
 
 fake_items_db = [{"item_name": "Foo"}, {"item_name": "Bar"}, {"item_name": "Baz"}]
 
-@app.get("/items")
-async def list_items(skip: int = 0, limit: int = 10):  
-    return fake_items_db[skip : skip + limit]
 
 @app.get("/items/{item_id}")
 async def get_item(item_id: str, q: Union[str, None] = None, short: bool = False):
@@ -69,6 +66,25 @@ async def create_item_with_put(item_id: int, item: Item, q: Union[str, None] = N
     if q:
         result.update({"q": q})
     return result
+
+@app.get("/items")
+async def read_item(q: Union[List[str], None] = Query(["foo", "bar"], title="Sample query string", description="Sample description", deprecated=True, alias="item-query")):
+    # http://127.0.0.1:5000/items?item-query=deneme&item-query=deneme2
+    """
+    async def read_item(q: Union[List[str], None] = Query(None))
+    async def read_item(q: Union[str, None] = Query("deneme", max_length=10, min_length=3, regex="^fixedquery$")):"""
+    results = {"items": [{"item_id": "Foo"}, {"item_id": "Bar"}]}
+    if q:
+        results.update({"q": q})
+    return results
+
+@app.get("/items/hidden")
+async def hidden_query_route(hidden_query: Union[str, None] = Query(None, include_in_schema=False)):
+    if hidden_query:
+        return {"hidden_query": hidden_query}
+    else:
+        return {"hidden_query": "Not found"}
+    
 
 # uvicorn main:app --host 127.0.0.1 --port 5000 --reload
 """
