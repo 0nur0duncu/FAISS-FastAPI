@@ -1,5 +1,0 @@
-{
-    "watch": ["app"],
-    "ext": "py",
-    "exec": "python -m uvicorn main:app --reload"
-}
