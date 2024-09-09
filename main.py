@@ -1,106 +1,54 @@
-from fastapi import FastAPI, Query, Path
+from fastapi import FastAPI, Query, Path, Body
 from enum import Enum
 from typing import Optional, Union, List
 from pydantic import BaseModel
 
 app = FastAPI()
 
-@app.get("/")
-async def root():
-    return {"message": "Hello from get route"}
+"""
+Part-7 -> Body -> Multiple Parameters
+"""
 
-@app.post("/")
-async def post():
-    return {"message": "Hello from post route"}
-
-@app.put("/")
-async def put():
-    return {"message": "Hello from put route"}
-
-fake_items_db = [{"item_name": "Foo"}, {"item_name": "Bar"}, {"item_name": "Baz"}]
-
-
-@app.get("/items/{item_id}")
-async def get_item(item_id: str, q: Union[str, None] = None, short: bool = False):
-    item = {item_id: item_id}
-    if q:
-        item.update({"q": q})
-    if not short:    
-        item.update(
-            {"description": "This is an amazing item that has a long description"}
-        )
-    return item
-
-class FoodEnum(str, Enum):
-    fruits = "fruits"
-    vegetables = "vegetables"
-    diary = "diary"
-
-@app.get("/food/{food_type}")
-async def get_food(food_type: FoodEnum):
-    if food_type == FoodEnum.fruits:
-        return {"message": "Hello from get fruits route"}
-    elif food_type == FoodEnum.vegetables:
-        return {"message": "Hello from get vegetables route"}
-    elif food_type == FoodEnum.diary:
-        return {"message": "Hello from get diary route"}
-    
-
-class Item(BaseModel): # request body
+class Item(BaseModel):
     name: str
     description: Union[str, None] = None
     price: float
     tax: Union[float, None] = None
 
-@app.post("/items")
-async def create_item(item : Item): #-> Item
-    item_dict = item.model_dump()
-    if item.tax:
-        price_with_tax = item.price + item.tax
-        item_dict.update({"price_with_tax": price_with_tax})
-    return item_dict
+class User(BaseModel):
+    username: str
+    full_name: Union[str, None] = None
+
+class Importance(BaseModel):
+    importance: int
 
 @app.put("/items/{item_id}")
-async def create_item_with_put(item_id: int, item: Item, q: Union[str, None] = None):
-    result = {"item_id": item_id, **item.model_dump()}
-    if q:
-        result.update({"q": q})
-    return result
-
-@app.get("/items")
-async def read_item(q: Union[List[str], None] = Query(["foo", "bar"], title="Sample query string", description="Sample description", deprecated=True, alias="item-query")):
-    # http://127.0.0.1:5000/items?item-query=deneme&item-query=deneme2
-    """
-    async def read_item(q: Union[List[str], None] = Query(None))
-    async def read_item(q: Union[str, None] = Query("deneme", max_length=10, min_length=3, regex="^fixedquery$")):"""
-    results = {"items": [{"item_id": "Foo"}, {"item_id": "Bar"}]}
+async def update_item(
+    *,
+    item_id: int = Path(title="The ID of the item to get", ge=0, le=150),
+    q: Union[str, None] = None,
+    # item: Union[Item, None] = None,
+    item: Item = Body(..., embed=True),
+    user: User,
+    importance: int = Body(...),
+):
+    results = {"item_id": item_id}
     if q:
         results.update({"q": q})
+    if item:
+        results.update({"item": item})
+    if user:
+        results.update({"user": user})
+    if importance:
+        results.update({"importance": importance})
     return results
 
-@app.get("/items/hidden")
-async def hidden_query_route(hidden_query: Union[str, None] = Query(None, include_in_schema=False)):
-    if hidden_query:
-        return {"hidden_query": hidden_query}
-    else:
-        return {"hidden_query": "Not found"}
-    
-@app.get("/items_validation/{item_id}")
-async def read_item_validation(*,item_id: int = Path(..., title="The ID of the item to get", ge=10, le=100), q: Union[str, None] = Query(default=None, alias="item-query"), size: float = Query(default=10.2, gt=0, lt=100)):
-    results = {"item_id": item_id, "size": size}
-    if q:
-        results.update({"q": q})
-    return results
+# Ctrl + Ö yorum satırı
+#Shift + Alt + A blok yorum satırı
 
-# uvicorn main:app --host 127.0.0.1 --port 5000 --reload
-"""
-raw body:
+""" 
 {
-    "name": "Hi",
-    "description": "Hello World", varsayılan değer None olduğu için ybody de yazılmayabilir.
-    "price": 0,
-    "tax": 0
+item : {},
+user : {}
 }
-header:
-"Content-Type":application/json
 """
