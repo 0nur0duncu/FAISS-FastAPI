@@ -1,54 +1,23 @@
 from fastapi import FastAPI, Query, Path, Body
 from enum import Enum
 from typing import Optional, Union, List
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 app = FastAPI()
 
 """
-Part-7 -> Body -> Multiple Parameters
+Part 8: Body - Field
 """
 
 class Item(BaseModel):
     name: str
-    description: Union[str, None] = None
-    price: float
+    description: Union[str, None] = Field(None, title="Description of the item", max_length=300)
+    price : float = Field(..., gt=0, description="The price must be greater than zero")
     tax: Union[float, None] = None
-
-class User(BaseModel):
-    username: str
-    full_name: Union[str, None] = None
-
-class Importance(BaseModel):
-    importance: int
 
 @app.put("/items/{item_id}")
 async def update_item(
-    *,
-    item_id: int = Path(title="The ID of the item to get", ge=0, le=150),
-    q: Union[str, None] = None,
-    # item: Union[Item, None] = None,
-    item: Item = Body(..., embed=True),
-    user: User,
-    importance: int = Body(...),
+    item_id: int, item: Item = Body(...,embed=True)
 ):
-    results = {"item_id": item_id}
-    if q:
-        results.update({"q": q})
-    if item:
-        results.update({"item": item})
-    if user:
-        results.update({"user": user})
-    if importance:
-        results.update({"importance": importance})
-    return results
-
-# Ctrl + Ö yorum satırı
-#Shift + Alt + A blok yorum satırı
-
-""" 
-{
-item : {},
-user : {}
-}
-"""
+    result = {"item_id": item_id, "item": item}
+    return result
