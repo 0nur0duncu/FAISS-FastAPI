@@ -1,1 +1,2 @@
 🔗 https://ihateregex.io/
+🔗 https://docs.pydantic.dev/latest/api/types/#pydantic.types

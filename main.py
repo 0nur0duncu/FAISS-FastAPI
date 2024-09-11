@@ -2,16 +2,14 @@ from fastapi import FastAPI, Query, Path, Body, Cookie, Header
 from enum import Enum
 from datetime import datetime, timedelta, time
 from uuid import UUID
-from typing import Union
+from typing import Union, List
 
 app = FastAPI()
 
 """
-Part 11: Extra Data Types
+Part 12: Cookie and Header Parameters
 """
 
-@app.put("/items/{item_id}")
-async def read_items(item_id:UUID, start_date:Union[datetime, None] = Body(None), end_date:Union[datetime, None] = Body(None), repeat_at:Union[time, None] = Body(None), process_after:Union[timedelta, None] = Body(None)):
-    start_process = start_date + process_after
-    duration = end_date - start_date
-    return {"item_id": item_id, "start_date": start_date, "end_date": end_date, "repeat_at": repeat_at, "process_after": process_after, "start_process": start_process, "duration": duration}
+@app.get("/items/")
+async def read_items(cookie_id: Union[str, None] = Cookie(default=None), accept_encoding: Union[List[str], None] = Header(default=None, convert_underscores=False), sec_ch_ua: Union[str, None] = Header(default=None), user_agent: Union[str, None] = Header(default=None), x_token: list[str, None] = Header(default=None)):
+    return {"cookie_id": cookie_id, "Accept-Encoding": accept_encoding, "sec-ch-ua": sec_ch_ua, "User-Agent": user_agent, "X-Token values": x_token}
