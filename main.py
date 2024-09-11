@@ -1,38 +1,17 @@
 from fastapi import FastAPI, Query, Path, Body, Cookie, Header
 from enum import Enum
-from typing import Optional, Union, List
-from pydantic import BaseModel, Field
-import re
+from datetime import datetime, timedelta, time
+from uuid import UUID
+from typing import Union
 
 app = FastAPI()
 
 """
-Part 10: Declare Request Example Data
+Part 11: Extra Data Types
 """
 
-class Item(BaseModel):
-    """ name: str = Field(..., example="Foo")
-    description: Union[str, None] = Field(None, example="A very nice Item")
-    price: float = Field(..., example=16.25)
-    tax: Union[float, None] = Field(None, example=10.5) """
-    name: str
-    description: Union[str, None] = None
-    price: float
-    tax: Union[float, None] = []
-
-    class Config: # yöntem 1
-        json_schema_extra = {
-            "example": {
-                "name": "Foo",
-                "description": "A very nice Item",
-                "price": 16.25,
-                "tax": 1.67
-            }
-        }
-
 @app.put("/items/{item_id}")
-async def update_item(
-    item_id: int,
-    item: Item = Body(..., examples={"normal": {"name": "Foo", "description": "A very nice Item", "value" :{"price": 16.25, "price": 1.67}}, "converted": { "summary": "An example with converted data", "description": "FastAPI can convert prices 'string'", "value": {"name":"bar", "price":"16.25"}}, "invalid": {"summary":"invalid data is rejected with an error", "value": {"name":"Baz", "price":"sixteen point twenty five"}}}),
-):
-    pass
+async def read_items(item_id:UUID, start_date:Union[datetime, None] = Body(None), end_date:Union[datetime, None] = Body(None), repeat_at:Union[time, None] = Body(None), process_after:Union[timedelta, None] = Body(None)):
+    start_process = start_date + process_after
+    duration = end_date - start_date
+    return {"item_id": item_id, "start_date": start_date, "end_date": end_date, "repeat_at": repeat_at, "process_after": process_after, "start_process": start_process, "duration": duration}
