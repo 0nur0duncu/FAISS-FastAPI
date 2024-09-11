@@ -35,5 +35,4 @@ async def update_item(
     item_id: int,
     item: Item = Body(..., examples={"normal": {"name": "Foo", "description": "A very nice Item", "value" :{"price": 16.25, "price": 1.67}}, "converted": { "summary": "An example with converted data", "description": "FastAPI can convert prices 'string'", "value": {"name":"bar", "price":"16.25"}}, "invalid": {"summary":"invalid data is rejected with an error", "value": {"name":"Baz", "price":"sixteen point twenty five"}}}),
 ):
-    results = {"item_id": item_id, "item": item}
-    return results
+    pass
